@@ -1,16 +1,32 @@
-if (document.getElementById(`slid-layer`))
-  document.getElementById(`slid-layer`).remove();
-if (document.getElementById(`slid-player-guide-message`))
-  document.getElementById(`slid-player-guide-message`).remove();
-if (document.getElementById(`slid-viewer-btns-container`))
-  document.getElementById(`slid-viewer-btns-container`).remove();
-if (selectLayerElements) {
-  selectLayerElements.forEach((layerElement) => {
-    layerElement.remove();
-  });
-}
+import { inherits } from "node:util";
+console.log("hihi");
+// Global variables
+let lang;
 
-var lang = window.navigator.language.toLowerCase();
+const removeOldContainer = () => {
+  if (document.getElementById(`slid-layer`)) document.getElementById(`slid-layer`).remove();
+  if (document.getElementById(`slid-player-guide-message`)) document.getElementById(`slid-player-guide-message`).remove();
+  if (document.getElementById(`slid-viewer-btns-container`)) document.getElementById(`slid-viewer-btns-container`).remove();
+  if (selectLayerElements) {
+    selectLayerElements.forEach((layerElement) => {
+      layerElement.remove();
+    });
+  }
+};
+
+const setGlobalVariable = () => {
+  lang = window.navigator.language.toLowerCase();
+};
+
+const setGuideMessageContainer = () => {};
+
+const init = () => {
+  removeOldContainer();
+  setGlobalVariable();
+  setGuideMessageContainer();
+};
+
+init();
 
 var guideMessageContainer = document.createElement("div");
 guideMessageContainer.id = `slid-player-guide-message`;
@@ -34,11 +50,7 @@ guideMessageContainer.innerHTML = `
     <img src="https://www.slid.cc/src/slid_icon/play_btn.png" style="
         height: 20px;
         margin-right: 10px;
-    "> ${
-      lang.includes("ko")
-        ? "Slid에서 재생할 동영상을 선택해주세요!"
-        : "Select the video for Slid!"
-    }
+    "> ${lang.includes("ko") ? "Slid에서 재생할 동영상을 선택해주세요!" : "Select the video for Slid!"}
 `;
 
 var layer = document.createElement("div");
@@ -56,10 +68,7 @@ layer.style = `
 var isPlayerSet = false;
 
 layer.addEventListener("click", (event) => {
-  if (
-    !slidPlayer.contains(event.target) &&
-    !videoContainer.contains(event.target)
-  ) {
+  if (!slidPlayer.contains(event.target) && !videoContainer.contains(event.target)) {
     exitSlidDom(event, isPlayerSet, true);
   }
 });
@@ -94,9 +103,7 @@ slidPlayer.style = `
     
     display: flex;
 `;
-slidPlayer.src = `${SlidWebHostUrl}/vdocs/new${
-  SlidAccessToken !== "NO_ACCESS_TOKEN" ? `?token=${SlidAccessToken}` : ""
-}`;
+slidPlayer.src = `${SlidWebHostUrl}/vdocs/new${SlidAccessToken !== "NO_ACCESS_TOKEN" ? `?token=${SlidAccessToken}` : ""}`;
 
 var videoContainer = document.createElement("div");
 videoContainer.id = `original-video-container`;
@@ -114,7 +121,6 @@ var VimeoPlayer = null;
 
 function setSlidPlayer(elementInfo) {
   window.removeEventListener("message", window.messageEventListener);
-
   var port = chrome.runtime.connect(null, {
     name: "SLID_CONTENT_TO_BACKGROUND_PORT",
   });
@@ -157,24 +163,17 @@ function setSlidPlayer(elementInfo) {
 
           case "IFRAME_TO_CONTENT_sendVideoRect":
             var videoRect = dataFromContent.data.videoRect;
-            videoContainer.style.top = `${
-              videoRect.top + slidPlayer.getBoundingClientRect().top
-            }px`;
-            videoContainer.style.left = `${
-              videoRect.left + slidPlayer.getBoundingClientRect().left
-            }px`;
+            videoContainer.style.top = `${videoRect.top + slidPlayer.getBoundingClientRect().top}px`;
+            videoContainer.style.left = `${videoRect.left + slidPlayer.getBoundingClientRect().left}px`;
             videoContainer.style.width = `${videoRect.width}px`;
             videoContainer.style.height = `${videoRect.height}px`;
 
             resetVideoSize();
 
-            captureRect.left =
-              videoContainer.getBoundingClientRect().left + 2.5;
+            captureRect.left = videoContainer.getBoundingClientRect().left + 2.5;
             captureRect.top = videoContainer.getBoundingClientRect().top + 2.5;
-            captureRect.width =
-              videoContainer.getBoundingClientRect().width - 5;
-            captureRect.height =
-              videoContainer.getBoundingClientRect().height - 5;
+            captureRect.width = videoContainer.getBoundingClientRect().width - 5;
+            captureRect.height = videoContainer.getBoundingClientRect().height - 5;
 
             tempCaptureRect = Object.assign({}, captureRect);
 
@@ -183,13 +182,10 @@ function setSlidPlayer(elementInfo) {
           case "IFRAME_TO_CONTENT_resetCaptureArea":
             resetVideoSize();
 
-            captureRect.left =
-              videoContainer.getBoundingClientRect().left + 2.5;
+            captureRect.left = videoContainer.getBoundingClientRect().left + 2.5;
             captureRect.top = videoContainer.getBoundingClientRect().top + 2.5;
-            captureRect.width =
-              videoContainer.getBoundingClientRect().width - 5;
-            captureRect.height =
-              videoContainer.getBoundingClientRect().height - 5;
+            captureRect.width = videoContainer.getBoundingClientRect().width - 5;
+            captureRect.height = videoContainer.getBoundingClientRect().height - 5;
 
             tempCaptureRect = Object.assign({}, captureRect);
             break;
@@ -207,8 +203,7 @@ function setSlidPlayer(elementInfo) {
                   break;
                 case "updateVideoTime":
                   const updateTime = dataFromContent.data.value;
-                  elementInfo.element.currentTime =
-                    elementInfo.element.currentTime + updateTime;
+                  elementInfo.element.currentTime = elementInfo.element.currentTime + updateTime;
                   break;
                 case "updatePlaybackRate":
                   const playbackRate = dataFromContent.data.value;
@@ -217,11 +212,7 @@ function setSlidPlayer(elementInfo) {
                 default:
                   return;
               }
-            } else if (
-              elementInfo.type === "youtube" ||
-              elementInfo.type === "youtube_nocookie" ||
-              elementInfo.type === "google_drive"
-            ) {
+            } else if (elementInfo.type === "youtube" || elementInfo.type === "youtube_nocookie" || elementInfo.type === "google_drive") {
               switch (dataFromContent.data.type) {
                 case "updatePlay":
                   var isPlaying = dataFromContent.data.value;
@@ -246,13 +237,9 @@ function setSlidPlayer(elementInfo) {
                   var updateTime = dataFromContent.data.value;
 
                   if (isYouTubeInnerHTML5Video) {
-                    elementInfo.element.currentTime =
-                      elementInfo.element.currentTime + updateTime;
+                    elementInfo.element.currentTime = elementInfo.element.currentTime + updateTime;
                   } else {
-                    YouTubePlayer.seekTo(
-                      YouTubePlayer.getCurrentTime() + updateTime,
-                      true
-                    );
+                    YouTubePlayer.seekTo(YouTubePlayer.getCurrentTime() + updateTime, true);
                   }
 
                   break;
@@ -280,15 +267,9 @@ function setSlidPlayer(elementInfo) {
                   }
                   break;
                 case "updateVideoTime":
-                  VimeoPlayer.getCurrentTime().then(function (
-                    vimeoCurrentTime
-                  ) {
+                  VimeoPlayer.getCurrentTime().then(function (vimeoCurrentTime) {
                     var vimeoUpdateTime = dataFromContent.data.value;
-                    VimeoPlayer.setCurrentTime(
-                      vimeoCurrentTime + vimeoUpdateTime >= 0
-                        ? vimeoCurrentTime + vimeoUpdateTime
-                        : 0
-                    );
+                    VimeoPlayer.setCurrentTime(vimeoCurrentTime + vimeoUpdateTime >= 0 ? vimeoCurrentTime + vimeoUpdateTime : 0);
                   });
 
                   break;
@@ -319,12 +300,8 @@ function setSlidPlayer(elementInfo) {
                 data: {
                   rect: captureRect,
                   canvasRect: {
-                    top: document
-                      .getElementById("slid-video-capture-area")
-                      .getBoundingClientRect().top,
-                    left: document
-                      .getElementById("slid-video-capture-area")
-                      .getBoundingClientRect().left,
+                    top: document.getElementById("slid-video-capture-area").getBoundingClientRect().top,
+                    left: document.getElementById("slid-video-capture-area").getBoundingClientRect().left,
                   },
                 },
               },
@@ -353,9 +330,7 @@ function setSlidPlayer(elementInfo) {
               case "youtube":
               case "youtube_nocookie":
               case "google_drive":
-                captureTime = isYouTubeInnerHTML5Video
-                  ? elementInfo.element.currentTime
-                  : YouTubePlayer.getCurrentTime();
+                captureTime = isYouTubeInnerHTML5Video ? elementInfo.element.currentTime : YouTubePlayer.getCurrentTime();
                 break;
               case "vimeo":
                 break;
@@ -409,9 +384,7 @@ function setSlidPlayer(elementInfo) {
               case "youtube":
               case "youtube_nocookie":
               case "google_drive":
-                captureTime = isYouTubeInnerHTML5Video
-                  ? elementInfo.element.currentTime
-                  : YouTubePlayer.getCurrentTime();
+                captureTime = isYouTubeInnerHTML5Video ? elementInfo.element.currentTime : YouTubePlayer.getCurrentTime();
                 break;
               case "vimeo":
                 break;
@@ -450,14 +423,9 @@ function setSlidPlayer(elementInfo) {
           case "IFRAME_TO_CONTENT_seekToTimestamp":
             if (elementInfo.type === "video") {
               elementInfo.element.currentTime = dataFromContent.data.timestamp;
-            } else if (
-              elementInfo.type === "youtube" ||
-              elementInfo.type === "youtube_nocookie" ||
-              elementInfo.type === "google_drive"
-            ) {
+            } else if (elementInfo.type === "youtube" || elementInfo.type === "youtube_nocookie" || elementInfo.type === "google_drive") {
               if (isYouTubeInnerHTML5Video) {
-                elementInfo.element.currentTime =
-                  dataFromContent.data.timestamp;
+                elementInfo.element.currentTime = dataFromContent.data.timestamp;
               } else {
                 YouTubePlayer.seekTo(dataFromContent.data.timestamp, true);
               }
@@ -533,24 +501,12 @@ function setSlidPlayer(elementInfo) {
                             {
                                 "action": "CONTENT_TO_IFRAME_sendCaptureImg",
                                 "data": {
-                                    "captureImgBase64": ${JSON.stringify(
-                                      message.data.captureImgBase64
-                                    )},
-                                    "captureTime": ${JSON.stringify(
-                                      message.data.captureTime
-                                    )},
-                                    "videoType": ${JSON.stringify(
-                                      elementInfo.type
-                                    )},
-                                    "videoUniqueKey": ${JSON.stringify(
-                                      elementInfo.videoUniqueKey
-                                    )},
-                                    "videoUrl": ${JSON.stringify(
-                                      elementInfo.videoUrl
-                                    )},
-                                    "originUrl": ${JSON.stringify(
-                                      window.location.href
-                                    )}
+                                    "captureImgBase64": ${JSON.stringify(message.data.captureImgBase64)},
+                                    "captureTime": ${JSON.stringify(message.data.captureTime)},
+                                    "videoType": ${JSON.stringify(elementInfo.type)},
+                                    "videoUniqueKey": ${JSON.stringify(elementInfo.videoUniqueKey)},
+                                    "videoUrl": ${JSON.stringify(elementInfo.videoUrl)},
+                                    "originUrl": ${JSON.stringify(window.location.href)}
                                 }
                             }
                         `,
@@ -562,21 +518,11 @@ function setSlidPlayer(elementInfo) {
                             {
                                 "action": "CONTENT_TO_IFRAME_sendCaptureImg",
                                 "data": {
-                                    "captureImgBase64": ${JSON.stringify(
-                                      message.data.captureImgBase64
-                                    )},
-                                    "videoType": ${JSON.stringify(
-                                      elementInfo.type
-                                    )},
-                                    "videoUniqueKey": ${JSON.stringify(
-                                      elementInfo.videoUniqueKey
-                                    )},
-                                    "videoUrl": ${JSON.stringify(
-                                      elementInfo.videoUrl
-                                    )},
-                                    "originUrl": ${JSON.stringify(
-                                      window.location.href
-                                    )}
+                                    "captureImgBase64": ${JSON.stringify(message.data.captureImgBase64)},
+                                    "videoType": ${JSON.stringify(elementInfo.type)},
+                                    "videoUniqueKey": ${JSON.stringify(elementInfo.videoUniqueKey)},
+                                    "videoUrl": ${JSON.stringify(elementInfo.videoUrl)},
+                                    "originUrl": ${JSON.stringify(window.location.href)}
                                 }
                             }
                         `,
@@ -598,24 +544,12 @@ function setSlidPlayer(elementInfo) {
                             {
                                 "action": "CONTENT_TO_IFRAME_sendAutoCaptureImg",
                                 "data": {
-                                    "captureImgBase64": ${JSON.stringify(
-                                      message.data.captureImgBase64
-                                    )},
-                                    "captureTime": ${JSON.stringify(
-                                      message.data.captureTime
-                                    )},
-                                    "videoType": ${JSON.stringify(
-                                      elementInfo.type
-                                    )},
-                                    "videoUniqueKey": ${JSON.stringify(
-                                      elementInfo.videoUniqueKey
-                                    )},
-                                    "videoUrl": ${JSON.stringify(
-                                      elementInfo.videoUrl
-                                    )},
-                                    "originUrl": ${JSON.stringify(
-                                      window.location.href
-                                    )}
+                                    "captureImgBase64": ${JSON.stringify(message.data.captureImgBase64)},
+                                    "captureTime": ${JSON.stringify(message.data.captureTime)},
+                                    "videoType": ${JSON.stringify(elementInfo.type)},
+                                    "videoUniqueKey": ${JSON.stringify(elementInfo.videoUniqueKey)},
+                                    "videoUrl": ${JSON.stringify(elementInfo.videoUrl)},
+                                    "originUrl": ${JSON.stringify(window.location.href)}
                                 }
                             }
                         `,
@@ -627,21 +561,11 @@ function setSlidPlayer(elementInfo) {
                             {
                                 "action": "CONTENT_TO_IFRAME_sendAutoCaptureImg",
                                 "data": {
-                                    "captureImgBase64": ${JSON.stringify(
-                                      message.data.captureImgBase64
-                                    )},
-                                    "videoType": ${JSON.stringify(
-                                      elementInfo.type
-                                    )},
-                                    "videoUniqueKey": ${JSON.stringify(
-                                      elementInfo.videoUniqueKey
-                                    )},
-                                    "videoUrl": ${JSON.stringify(
-                                      elementInfo.videoUrl
-                                    )},
-                                    "originUrl": ${JSON.stringify(
-                                      window.location.href
-                                    )}
+                                    "captureImgBase64": ${JSON.stringify(message.data.captureImgBase64)},
+                                    "videoType": ${JSON.stringify(elementInfo.type)},
+                                    "videoUniqueKey": ${JSON.stringify(elementInfo.videoUniqueKey)},
+                                    "videoUrl": ${JSON.stringify(elementInfo.videoUrl)},
+                                    "originUrl": ${JSON.stringify(window.location.href)}
                                 }
                             }
                         `,
@@ -842,9 +766,7 @@ function setSlidPlayer(elementInfo) {
   }
 
   if (elementInfo.type === "video") {
-    var embedPlayer = getEmbedPlayerFromVideoUrl(
-      elementInfo.element.currentSrc
-    );
+    var embedPlayer = getEmbedPlayerFromVideoUrl(elementInfo.element.currentSrc);
     if (embedPlayer.type) {
       switch (embedPlayer.type) {
         case "youtube":
@@ -927,19 +849,11 @@ function setSlidPlayer(elementInfo) {
                   youtubeId = youtubeId.substring(0, ampersandPosition);
                 }
               } else if (window.location.href.includes("youtube.com/embed/")) {
-                youtubeId = window.location.href
-                  .split("?")[0]
-                  .split("embed/")[1];
+                youtubeId = window.location.href.split("?")[0].split("embed/")[1];
               } else if (window.location.href.includes("youtu.be/")) {
-                youtubeId = window.location.href
-                  .split("?")[0]
-                  .split("youtu.be/")[1];
-              } else if (
-                window.location.href.includes("youtube-nocookie.com/embed/")
-              ) {
-                youtubeId = window.location.href
-                  .split("?")[0]
-                  .split("youtube-nocookie.com/embed/")[1];
+                youtubeId = window.location.href.split("?")[0].split("youtu.be/")[1];
+              } else if (window.location.href.includes("youtube-nocookie.com/embed/")) {
+                youtubeId = window.location.href.split("?")[0].split("youtube-nocookie.com/embed/")[1];
               }
 
               if (youtubeId) {
@@ -959,15 +873,9 @@ function setSlidPlayer(elementInfo) {
             case "vimeo":
               var vimeoId = null;
               if (window.location.href.includes("//vimeo.com/")) {
-                vimeoId = window.location.href
-                  .split("?")[0]
-                  .split("vimeo.com/")[1];
-              } else if (
-                window.location.href.includes("player.vimeo.com/video/")
-              ) {
-                vimeoId = window.location.href
-                  .split("?")[0]
-                  .split("player.vimeo.com/video/")[1];
+                vimeoId = window.location.href.split("?")[0].split("vimeo.com/")[1];
+              } else if (window.location.href.includes("player.vimeo.com/video/")) {
+                vimeoId = window.location.href.split("?")[0].split("player.vimeo.com/video/")[1];
               }
 
               if (vimeoId) {
@@ -990,11 +898,7 @@ function setSlidPlayer(elementInfo) {
                 },
               });
 
-              alert(
-                lang.includes("ko")
-                  ? "에러가 발생했습니다! 다시 시도해주세요! 😅"
-                  : "Oops! Something went wrong. Please try again. 😅"
-              );
+              alert(lang.includes("ko") ? "에러가 발생했습니다! 다시 시도해주세요! 😅" : "Oops! Something went wrong. Please try again. 😅");
               isFailed = true;
               return;
           }
@@ -1045,8 +949,7 @@ function setSlidPlayer(elementInfo) {
           var iframeOriginUrl;
 
           if (elementInfo.element.src.includes("?")) {
-            iframeOriginUrl =
-              elementInfo.element.src.split("?")[0] + "?enablejsapi=1";
+            iframeOriginUrl = elementInfo.element.src.split("?")[0] + "?enablejsapi=1";
           } else {
             iframeOriginUrl = elementInfo.element.src + "?enablejsapi=1";
           }
@@ -1054,10 +957,7 @@ function setSlidPlayer(elementInfo) {
           elementInfo.element = document.createElement("iframe");
           elementInfo.element.src = iframeOriginUrl;
 
-          var videoId = elementInfo.element.src
-            .split("?")[0]
-            .split("youtube.com/embed/")[1]
-            .replace("/", "");
+          var videoId = elementInfo.element.src.split("?")[0].split("youtube.com/embed/")[1].replace("/", "");
           elementInfo.videoUniqueKey = videoId;
           elementInfo.videoUrl = elementInfo.element.src;
 
@@ -1066,8 +966,7 @@ function setSlidPlayer(elementInfo) {
           var iframeOriginUrl;
 
           if (elementInfo.element.src.includes("?")) {
-            iframeOriginUrl =
-              elementInfo.element.src.split("?")[0] + "?enablejsapi=1";
+            iframeOriginUrl = elementInfo.element.src.split("?")[0] + "?enablejsapi=1";
           } else {
             iframeOriginUrl = elementInfo.element.src + "?enablejsapi=1";
           }
@@ -1075,10 +974,7 @@ function setSlidPlayer(elementInfo) {
           elementInfo.element = document.createElement("iframe");
           elementInfo.element.src = iframeOriginUrl;
 
-          var videoId = elementInfo.element.src
-            .split("?")[0]
-            .split("youtube-nocookie.com/embed/")[1]
-            .replace("/", "");
+          var videoId = elementInfo.element.src.split("?")[0].split("youtube-nocookie.com/embed/")[1].replace("/", "");
           elementInfo.videoUniqueKey = videoId;
           elementInfo.videoUrl = elementInfo.element.src;
 
@@ -1095,10 +991,7 @@ function setSlidPlayer(elementInfo) {
           elementInfo.element = document.createElement("iframe");
           elementInfo.element.src = iframeOriginUrl;
 
-          var videoId = elementInfo.element.src
-            .split("?")[0]
-            .split("player.vimeo.com/video/")[1]
-            .replace("/", "");
+          var videoId = elementInfo.element.src.split("?")[0].split("player.vimeo.com/video/")[1].replace("/", "");
           elementInfo.videoUniqueKey = videoId;
           elementInfo.videoUrl = elementInfo.element.src;
 
@@ -1116,9 +1009,7 @@ function setSlidPlayer(elementInfo) {
             elementInfo.element = document.createElement("iframe");
             elementInfo.element.src = iframeOriginUrl;
 
-            var videoId = new URLSearchParams(elementInfo.element.src).get(
-              "docid"
-            );
+            var videoId = new URLSearchParams(elementInfo.element.src).get("docid");
             elementInfo.videoUniqueKey = videoId;
             elementInfo.videoUrl = elementInfo.element.src;
 
@@ -1132,11 +1023,7 @@ function setSlidPlayer(elementInfo) {
                 msg: "SLID_EXTENSION_URLSearchParams_ERROR",
               },
             });
-            alert(
-              lang.includes("ko")
-                ? "에러가 발생했습니다! 다시 시도해주세요! 😅"
-                : "Oops! Something went wrong. Please try again. 😅"
-            );
+            alert(lang.includes("ko") ? "에러가 발생했습니다! 다시 시도해주세요! 😅" : "Oops! Something went wrong. Please try again. 😅");
             isFailed = true;
 
             break;
@@ -1149,11 +1036,7 @@ function setSlidPlayer(elementInfo) {
               msg: "SLID_EXTENSION_foundEmbedPlayerWebsite.type_ERROR",
             },
           });
-          alert(
-            lang.includes("ko")
-              ? "에러가 발생했습니다! 다시 시도해주세요! 😅"
-              : "Oops! Something went wrong. Please try again. 😅"
-          );
+          alert(lang.includes("ko") ? "에러가 발생했습니다! 다시 시도해주세요! 😅" : "Oops! Something went wrong. Please try again. 😅");
           isFailed = true;
 
           return;
@@ -1168,9 +1051,7 @@ function setSlidPlayer(elementInfo) {
       if (
         iframeOriginUrl &&
         typeof iframeOriginUrl === "string" &&
-        (iframeOriginUrl.includes("eclass3.cau.ac.kr") ||
-          iframeOriginUrl.includes("portfolio.ajou.ac.kr") ||
-          iframeOriginUrl.includes("https://ncms.yonsei.ac.kr/em/"))
+        (iframeOriginUrl.includes("eclass3.cau.ac.kr") || iframeOriginUrl.includes("portfolio.ajou.ac.kr") || iframeOriginUrl.includes("https://ncms.yonsei.ac.kr/em/"))
       ) {
         elementInfo.videoUniqueKey = iframeOriginUrl.split(/[?#]/)[0];
       } else {
@@ -1401,19 +1282,9 @@ function setCaptureArea() {
 
   const captureAreaCtx = captureArea.getContext("2d");
 
-  captureAreaCtx.clearRect(
-    0,
-    0,
-    captureArea.getBoundingClientRect().width,
-    captureArea.getBoundingClientRect().height
-  ); //clear canvas
+  captureAreaCtx.clearRect(0, 0, captureArea.getBoundingClientRect().width, captureArea.getBoundingClientRect().height); //clear canvas
   captureAreaCtx.beginPath();
-  captureAreaCtx.rect(
-    rectStartX,
-    rectStartY,
-    captureAreaWidth,
-    captureAreaHeight
-  );
+  captureAreaCtx.rect(rectStartX, rectStartY, captureAreaWidth, captureAreaHeight);
   captureAreaCtx.strokeStyle = "#007bff";
   captureAreaCtx.setLineDash([10, 5]);
   captureAreaCtx.lineWidth = 5;
@@ -1461,10 +1332,8 @@ function setCaptureArea() {
       captureAreaCtx.lineWidth = 5;
       captureAreaCtx.stroke();
 
-      tempCaptureRect.top =
-        height >= 0 ? absoluteStartY : absoluteStartY + height;
-      tempCaptureRect.left =
-        width >= 0 ? absoluteStartX : absoluteStartX + width;
+      tempCaptureRect.top = height >= 0 ? absoluteStartY : absoluteStartY + height;
+      tempCaptureRect.left = width >= 0 ? absoluteStartX : absoluteStartX + width;
       tempCaptureRect.width = width >= 0 ? width : Math.abs(width);
       tempCaptureRect.height = height >= 0 ? height : Math.abs(height);
     }
@@ -1474,19 +1343,11 @@ function setCaptureArea() {
 function exitSlidDom(event, isPlayerSet = true, shouldShowConfirm = false) {
   if (isPlayerSet) {
     if (shouldShowConfirm) {
-      const shouldLeave = confirm(
-        lang.includes("ko")
-          ? "Slid를 종료하시겠어요?"
-          : "Are you sure you want to leave?"
-      );
+      const shouldLeave = confirm(lang.includes("ko") ? "Slid를 종료하시겠어요?" : "Are you sure you want to leave?");
       if (shouldLeave) {
-        var videoOriginPosition = document.getElementById(
-          `slid-video-origin-position`
-        );
+        var videoOriginPosition = document.getElementById(`slid-video-origin-position`);
         if (videoOriginPosition) {
-          videoOriginPosition.appendChild(
-            document.getElementById(`slid-video-player`)
-          );
+          videoOriginPosition.appendChild(document.getElementById(`slid-video-player`));
           videoOriginPosition.replaceWith(videoOriginPosition.firstChild);
         }
 
@@ -1502,13 +1363,9 @@ function exitSlidDom(event, isPlayerSet = true, shouldShowConfirm = false) {
         return;
       }
     } else {
-      var videoOriginPosition = document.getElementById(
-        `slid-video-origin-position`
-      );
+      var videoOriginPosition = document.getElementById(`slid-video-origin-position`);
       if (videoOriginPosition) {
-        videoOriginPosition.appendChild(
-          document.getElementById(`slid-video-player`)
-        );
+        videoOriginPosition.appendChild(document.getElementById(`slid-video-player`));
         videoOriginPosition.replaceWith(videoOriginPosition.firstChild);
       }
 
@@ -1522,13 +1379,9 @@ function exitSlidDom(event, isPlayerSet = true, shouldShowConfirm = false) {
       window.removeEventListener("message", window.messageEventListener);
     }
   } else {
-    var videoOriginPosition = document.getElementById(
-      `slid-video-origin-position`
-    );
+    var videoOriginPosition = document.getElementById(`slid-video-origin-position`);
     if (videoOriginPosition) {
-      videoOriginPosition.appendChild(
-        document.getElementById(`slid-video-player`)
-      );
+      videoOriginPosition.appendChild(document.getElementById(`slid-video-player`));
       videoOriginPosition.replaceWith(videoOriginPosition.firstChild);
     }
 
@@ -1559,10 +1412,7 @@ function setLayersOnVideosAndIframes() {
   Array.from(iframes).forEach((iframeElement) => {
     if (iframeElement.src.includes(SlidWebHostUrl)) return;
 
-    if (
-      iframeElement.src === undefined ||
-      iframeElement.src === "about:blank"
-    ) {
+    if (iframeElement.src === undefined || iframeElement.src === "about:blank") {
       // only look inside iframe if iframe has un-openable url
       try {
         var iframeDocument = iframeElement.contentDocument;
@@ -1604,12 +1454,8 @@ function setLayersOnVideosAndIframes() {
       var videoLayer = document.createElement("div");
       videoLayer.style = `
                 position: absolute;
-                top: ${
-                  videoRectInfo.rect.top + document.documentElement.scrollTop
-                }px;
-                left: ${
-                  videoRectInfo.rect.left + document.documentElement.scrollLeft
-                }px;
+                top: ${videoRectInfo.rect.top + document.documentElement.scrollTop}px;
+                left: ${videoRectInfo.rect.left + document.documentElement.scrollLeft}px;
                 z-index: 2147483646;
                 
                 width: ${videoRectInfo.rect.width}px;
@@ -1643,12 +1489,8 @@ function setLayersOnVideosAndIframes() {
       var iframeLayer = document.createElement("div");
       iframeLayer.style = `
                 position: absolute;
-                top: ${
-                  iframeRectInfo.rect.top + document.documentElement.scrollTop
-                }px;
-                left: ${
-                  iframeRectInfo.rect.left + document.documentElement.scrollLeft
-                }px;
+                top: ${iframeRectInfo.rect.top + document.documentElement.scrollTop}px;
+                left: ${iframeRectInfo.rect.left + document.documentElement.scrollLeft}px;
                 z-index: 2147483645;
                 
                 width: ${iframeRectInfo.rect.width}px;
